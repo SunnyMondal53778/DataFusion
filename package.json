@@ -1,0 +1,25 @@
+{
+  "name": "datafusion",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@faker-js/faker": "^9.0.2",
+    "body-parser": "^1.20.3",
+    "canvas": "^2.11.2",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.0",
+    "json2csv": "^6.0.0-alpha.2",
+    "node-fetch": "^3.3.2",
+    "pdfkit": "^0.15.0",
+    "puppeteer": "^23.4.1",
+    "qrcode": "^1.5.4"
+  }
+}
