@@ -1,14 +1,14 @@
-const express = require('express');
+import express from 'express';
 const app = express();
-const puppeteer = require('puppeteer'); // for screenshot
-const json2csv = require('json2csv').Parser; // for CSV conversion
-const qrcode = require('qrcode'); // for QR code generation
+import { launch } from 'puppeteer'; // for screenshot
+import { Parser as json2csv } from 'json2csv'; // for CSV conversion
+import { toBuffer } from 'qrcode'; // for QR code generation
 
 // Screenshot route
 app.get('/api/screenshot', async (req, res) => {
     const url = req.query.url;
     // Use Puppeteer to capture screenshot
-    const browser = await puppeteer.launch();
+    const browser = await launch();
     const page = await browser.newPage();
     await page.goto(url);
     const screenshot = await page.screenshot();
@@ -42,7 +42,7 @@ app.post('/api/generate-data', (req, res) => {
 app.get('/api/qrcode', async (req, res) => {
     const text = req.query.text;
     // Generate QR code
-    const qrCode = await qrcode.toBuffer(text);
+    const qrCode = await toBuffer(text);
     res.set("Content-Type", "image/png");
     res.send(qrCode);
 });

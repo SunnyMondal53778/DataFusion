@@ -7,8 +7,12 @@ router.post('/', (req, res) => {
     const { schema, count } = req.body;
 
     // Validate input
-    if (!schema || !count || typeof count !== 'number' || count <= 0) {
-        return res.status(400).send('Schema and count are required, count must be a positive integer');
+    if (!schema || typeof schema !== 'object' || Array.isArray(schema)) {
+        return res.status(400).send('Invalid schema: must be a non-empty object.');
+    }
+
+    if (!count || typeof count !== 'number' || count <= 0) {
+        return res.status(400).send('Count is required and must be a positive integer.');
     }
 
     try {
@@ -16,10 +20,15 @@ router.post('/', (req, res) => {
         for (let i = 0; i < count; i++) {
             const row = {};
             for (const key in schema) {
-                if (!faker[schema[key]]) {
-                    throw new Error(`Unknown faker method: ${schema[key]}`);
+                const method = schema[key];
+
+                // Validate faker method
+                if (typeof method !== 'string' || !faker[method] || typeof faker[method] !== 'function') {
+                    throw new Error(`Unknown or invalid faker method for key '${key}': ${method}`);
                 }
-                row[key] = faker[schema[key]](); // Generates random data based on the schema
+
+                // Generates random data based on the schema
+                row[key] = faker[method]();
             }
             data.push(row);
         }
@@ -30,8 +39,8 @@ router.post('/', (req, res) => {
         res.attachment('randomData.csv');
         res.send(csv);
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Error generating data');
+        console.error('Error generating data:', error);
+        res.status(500).send(`Error generating data: ${error.message}`);
     }
 });
 

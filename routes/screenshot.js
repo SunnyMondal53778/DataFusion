@@ -5,6 +5,12 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 
+// Ensure that the screenshots directory exists
+const screenshotDir = path.join(__dirname, '../screenshots');
+if (!fs.existsSync(screenshotDir)) {
+    fs.mkdirSync(screenshotDir, { recursive: true });
+}
+
 router.get('/', async (req, res) => {
     const { url } = req.query;
 
@@ -14,22 +20,31 @@ router.get('/', async (req, res) => {
     }
 
     try {
+        // Launch the browser
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
-        await page.goto(url);
-        await page.waitForLoadState('networkidle2'); // Wait for page to load
+        await page.goto(url, { waitUntil: 'networkidle2' }); // Wait for the page to load completely
 
+        // Capture the screenshot
         const screenshot = await page.screenshot({
             encoding: 'binary',
             type: 'png'
         });
 
-        const outputPath = path.join(__dirname, '../screenshots/screenshot.png');
-        fs.writeFileSync(outputPath, screenshot);
+        const outputPath = path.join(screenshotDir, 'screenshot.png');
+        fs.writeFileSync(outputPath, screenshot); // Save the screenshot locally
 
-        res.download(outputPath); // Send the screenshot back to the client
+        // Send the screenshot to the client
+        res.download(outputPath, 'screenshot.png', (err) => {
+            if (err) {
+                console.error('Error downloading screenshot:', err);
+            }
 
-        await browser.close();
+            // Clean up: Delete the screenshot after sending it
+            fs.unlinkSync(outputPath);
+        });
+
+        await browser.close(); // Close the browser
     } catch (error) {
         console.error('Error taking screenshot:', error);
         res.status(500).send(`Error taking screenshot: ${error.message}`);
